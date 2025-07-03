@@ -11,3 +11,4 @@ async def handle_request(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "🖇️ [@cinepulsefam](https://t.me/cinepulsefam)\n\n"
         "📌 *𝐎𝐮𝐫 𝐭𝐞𝐚𝐦 𝐰𝐢𝐥𝐥 𝐮𝐩𝐥𝐨𝐚𝐝 𝐢𝐭 𝐀𝐒𝐀𝐏!*",
         parse_mode="Markdown"
+    )
