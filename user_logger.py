@@ -1,4 +1,5 @@
 import os
+import requests
 
 BOT_OWNER_ID = "7298989448"
 
@@ -27,6 +28,17 @@ def is_banned(user_id):
     with open(BLOCKED_FILE, "r") as f:
         return user_id in f.read().splitlines()
 
+def get_user_name(user_id):
+    try:
+        r = requests.get(f"https://api.telegram.org/bot{os.getenv('BOT_TOKEN')}/getChat?chat_id={user_id}")
+        data = r.json()
+        if data.get("ok"):
+            user = data["result"]
+            return f"{user.get('first_name', '')} {user.get('last_name', '')}".strip()
+    except:
+        pass
+    return f"User {user_id}"
+
 def handle_bot_block(user_id):
     user_id = str(user_id)
     if user_id == BOT_OWNER_ID:
@@ -47,13 +59,15 @@ def handle_bot_block(user_id):
         for uid, count in counts.items():
             f.write(f"{uid}:{count}\n")
 
+    user_display = get_user_name(user_id)
+
     if current_count >= 3:
         with open(BLOCKED_FILE, "r+") as f:
             blocked = f.read().splitlines()
             if user_id not in blocked:
                 f.write(user_id + "\n")
-        print(f"🚫 Blocked {user_id}")
+        print(f"🚫 Blocked {user_display}")
         return True
 
-    print(f"⚠️ Warning {user_id} - {current_count}/3")
+    print(f"⚠️ Warning {user_display} - {current_count}/3")
     return False
