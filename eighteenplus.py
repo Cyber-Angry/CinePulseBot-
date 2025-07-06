@@ -2,14 +2,14 @@ from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import ContextTypes
 from utils import load_json
 
-# Load 18+ data
+# Load data
 eighteenplus_data = load_json("eighteenplus_data.json")
 
-# ✅ Renamed function as required by cine.py
+# ✅ CinePulseBot-compatible name
 async def show_eighteen(update: Update, context: ContextTypes.DEFAULT_TYPE, page=1):
-    context.user_data["eighteenplus_page"] = page
-    items = [{"title": title, "emoji": eighteenplus_data[title].get("emoji", "")} for title in eighteenplus_data]
-    total_items = len(items)
+    context.user_data["eighteen_page"] = page  # Important: 'eighteen_page' key matches bot.py
+    titles = list(eighteenplus_data.keys())
+    total_items = len(titles)
     total_pages = (total_items - 1) // 30 + 1
 
     if page < 1 or page > total_pages:
@@ -18,32 +18,36 @@ async def show_eighteen(update: Update, context: ContextTypes.DEFAULT_TYPE, page
 
     start = (page - 1) * 30
     end = start + 30
-    current_items = items[start:end]
+    current_titles = titles[start:end]
 
     keyboard = []
-    for i in range(0, len(current_items), 2):
-        row = []
-        left = current_items[i]
-        row.append(f"{left['title']} {left['emoji']}".strip())
-        if i + 1 < len(current_items):
-            right = current_items[i + 1]
-            row.append(f"{right['title']} {right['emoji']}".strip())
+    for i in range(0, len(current_titles), 2):
+        row = [current_titles[i]]
+        if i + 1 < len(current_titles):
+            row.append(current_titles[i + 1])
         keyboard.append(row)
 
-    keyboard.append(["⏮ Back", "⏭ Next"])
+    # Navigation
+    nav = []
+    if page > 1:
+        nav.append("⏮ Back")
+    if page < total_pages:
+        nav.append("⏭ Next")
+    if nav:
+        keyboard.append(nav)
     keyboard.append(["🏠 Main Menu"])
 
     await update.message.reply_text(
-        "🔞🔥 𝟏𝟖+ 𝐂𝐨𝐥𝐥𝐞𝐜𝐭𝐢𝐨𝐧",
+        "🔞🔥 𝟏𝟖+ 𝐂𝐨𝐧𝐭𝐞𝐧𝐭",
         reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
     )
 
-# Handle 18+ selection
-async def handle_eighteenplus_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
+# ✅ This name must match: handle_eighteen_buttons
+async def handle_eighteen_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text.strip()
-    page = context.user_data.get("eighteenplus_page", 1)
-    items = [{"title": title, "emoji": eighteenplus_data[title].get("emoji", "")} for title in eighteenplus_data]
-    total_pages = (len(items) - 1) // 30 + 1
+    page = context.user_data.get("eighteen_page", 1)
+    titles = list(eighteenplus_data.keys())
+    total_pages = (len(titles) - 1) // 30 + 1
 
     # Navigation
     if text == "⏮ Back":
@@ -65,36 +69,35 @@ async def handle_eighteenplus_buttons(update: Update, context: ContextTypes.DEFA
         await update.message.reply_text("🏠 Back to Main Menu:", reply_markup=reply_markup)
         return
 
-    # Title match
-    for title in eighteenplus_data:
-        expected_btn = f"{title} {eighteenplus_data[title].get('emoji', '')}".strip()
-        if text == expected_btn:
-            data = eighteenplus_data[title]
-            poster = data.get("poster", "")
-            links = "\n".join(data.get("links", []))
-            audio = "Hindi + Multi Audio"
+    # Show selected item
+    if text in eighteenplus_data:
+        data = eighteenplus_data[text]
+        poster = data.get("poster", "")
+        links = "\n".join(data.get("links", []))
+        audio = "Hindi + Multi Audio"
 
-            link_help = (
-                "\n\n⚠️ Link open nahi ho raha? Relax 😌\n"
-                "👇 Ye dekhlo:\n"
-                "💠 How to Open 🔗Link —\n"
-                "https://t.me/cinepulsefam/31 ✅"
-            )
+        link_help = (
+            "\n\n⚠️ Link open nahi ho raha? Relax 😌\n"
+            "👇 Ye dekhlo:\n"
+            "💠 How to Open 🔗Link —\n"
+            "https://t.me/cinepulsefam/31 ✅"
+        )
 
-            caption = f"<b>{title}</b>\n\n🔊 Audio: {audio}\n\n{links}{link_help}"
+        caption = f"<b>{text}</b>\n\n🔊 Audio: {audio}\n\n{links}{link_help}"
 
-            try:
-                if poster:
-                    if len(caption) > 1024:
-                        await update.message.reply_photo(photo=poster)
-                        await update.message.reply_text(caption, parse_mode="HTML")
-                    else:
-                        await update.message.reply_photo(photo=poster, caption=caption, parse_mode="HTML")
-                else:
+        try:
+            if poster:
+                if len(caption) > 1024:
+                    await update.message.reply_photo(photo=poster)
                     await update.message.reply_text(caption, parse_mode="HTML")
-            except Exception as e:
-                print(f"[❗] Image error for {title}: {e}")
+                else:
+                    await update.message.reply_photo(photo=poster, caption=caption, parse_mode="HTML")
+            else:
                 await update.message.reply_text(caption, parse_mode="HTML")
-            return
+        except Exception as e:
+            print(f"[❗] Image error for {text}: {e}")
+            await update.message.reply_text(caption, parse_mode="HTML")
+        return
 
+    # Not matched
     await update.message.reply_text("❌ Invalid option. Please use the menu.")
