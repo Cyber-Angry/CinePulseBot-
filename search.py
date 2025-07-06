@@ -30,7 +30,7 @@ def fix_poster_url(url: str) -> str:
         return url.replace("https://catbox.moe/", "https://files.catbox.moe/")
     return url
 
-# ✅ Combine all data from all json files
+# ✅ Combine all data from all JSON files
 def load_all_data():
     all_data = {}
     for file in DATA_FILES:
@@ -44,7 +44,8 @@ def load_all_data():
     return all_data
 
 # ✅ Used in bot.py → search_movie(query)
-def search_movie(query):                                                             data = load_all_data()
+def search_movie(query):
+    data = load_all_data()
     matches = get_close_matches(query, list(data.keys()), n=1, cutoff=0.3)
 
     if not matches:
@@ -54,19 +55,21 @@ def search_movie(query):                                                        
     item = data[title]
     poster = fix_poster_url(item.get("poster", ""))
     audio = item.get("audio", "Hindi + English")
-    imdb = item.get("imdb", "N/A")                                                   links = "\n".join(item.get("links", []))
+    imdb = item.get("imdb", "N/A")
+    links = "\n".join(item.get("links", []))
 
     # Base caption
     base = f"<b>{title}</b>\n⭐ IMDb: {imdb}\n🔊 Audio: {audio}\n\n"
     footer = "\n\n⚠️ Link not opening?\n🔗 How to Open — https://t.me/cinepulsefam/31"
 
-    # ✅ Limit to 1024 characters
+    # ✅ Limit caption to 1024 characters
     body = links
     total = base + body + footer
     if len(total) > 1024:
         allowed_links = 1024 - len(base) - len(footer) - 50
         body = links[:allowed_links] + "\n🔗 More links available..."
-        total = base + body + footer                                             
+        total = base + body + footer
+
     return title, poster, total
 
 # ✅ When user types something to search
@@ -77,7 +80,8 @@ async def search_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not query:
         await update.message.reply_text("❌ Please enter something to search.")
         return
-                                                                                     result = search_movie(query)
+
+    result = search_movie(query)
     if not result:
         await update.message.reply_text("❌ No results found. Try a different name.")
         return
@@ -89,10 +93,10 @@ async def search_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_photo(photo=poster, caption=caption, parse_mode="HTML")
         else:
             await update.message.reply_text(caption, parse_mode="HTML")
-
     except Exception as e:
         err = str(e).lower()
         print(f"[❗] Search error: {e}")
-        if "forbidden" in err or "bot was blocked" in err or "unauthorized" in err:                                                                                           handle_bot_block(user_id)
+        if "forbidden" in err or "bot was blocked" in err or "unauthorized" in err:
+            handle_bot_block(user_id)
 
         await update.message.reply_text(caption[:4000], parse_mode="HTML")
