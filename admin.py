@@ -7,7 +7,8 @@ from dotenv import load_dotenv
 load_dotenv()
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 BOT_OWNER_ID = "7298989448"
-                                                                                 LOGS_DIR = "logs"
+
+LOGS_DIR = "logs"
 USERS_FILE = os.path.join(LOGS_DIR, "users.txt")
 BLOCKED_FILE = os.path.join(LOGS_DIR, "blocked.txt")
 
@@ -15,7 +16,8 @@ os.makedirs(LOGS_DIR, exist_ok=True)
 for f in [USERS_FILE, BLOCKED_FILE]:
     if not os.path.exists(f):
         open(f, "a").close()
-                                                                                 def fetch_user_name(user_id):
+
+def fetch_user_name(user_id):
     try:
         url = f"https://api.telegram.org/bot{BOT_TOKEN}/getChat?chat_id={user_id}"
         response = requests.get(url).json()
@@ -33,8 +35,16 @@ async def admin_panel(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if str(update.effective_user.id) != BOT_OWNER_ID:
         return
     buttons = [
-        [InlineKeyboardButton("👥 View Total Users", callback_data="show_users")],                                                                                        [InlineKeyboardButton("🚫 View Blocked Users", callback_data="show_blocked")],                                                                                    [InlineKeyboardButton("✅ View Unblocked Users", callback_data="show_unblocked")]                                                                             ]
-    await update.message.reply_text("👑 <b>Admin Panel</b>", parse_mode="HTML", reply_markup=InlineKeyboardMarkup(buttons))                                       
+        [InlineKeyboardButton("👥 View Total Users", callback_data="show_users")],
+        [InlineKeyboardButton("🚫 View Blocked Users", callback_data="show_blocked")],
+        [InlineKeyboardButton("✅ View Unblocked Users", callback_data="show_unblocked")]
+    ]
+    await update.message.reply_text(
+        "👑 <b>Admin Panel</b>",
+        parse_mode="HTML",
+        reply_markup=InlineKeyboardMarkup(buttons)
+    )
+
 async def handle_admin_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
@@ -80,9 +90,11 @@ async def handle_admin_callback(update: Update, context: ContextTypes.DEFAULT_TY
             name = fetch_user_name(uid)
             label = f"{i}. {name} ({uid})"
             callback = f"toggle:{uid}:block"
-            buttons.append([InlineKeyboardButton("Block", callback_data=callback)])                                                                                           msg += f"{label}\n"
+            buttons.append([InlineKeyboardButton("Block", callback_data=callback)])
+            msg += f"{label}\n"
         await query.edit_message_text(msg, parse_mode="HTML", reply_markup=InlineKeyboardMarkup(buttons))
-                                                                                     elif data.startswith("toggle"):
+
+    elif data.startswith("toggle"):
         _, uid, action = data.split(":")
         if action == "block":
             with open(BLOCKED_FILE, "a") as f:
@@ -92,11 +104,11 @@ async def handle_admin_callback(update: Update, context: ContextTypes.DEFAULT_TY
             with open(BLOCKED_FILE, "r") as f:
                 lines = f.read().splitlines()
             with open(BLOCKED_FILE, "w") as f:
-                for line in lines:                                                                   if line != uid:
+                for line in lines:
+                    if line != uid:
                         f.write(line + "\n")
             await query.edit_message_text(f"✅ Unblocked user {uid}")
 
-# ✅ Direct User ID blocking/unblocking from owner message
 async def handle_admin_id(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if str(update.effective_user.id) != BOT_OWNER_ID:
         return
@@ -108,7 +120,8 @@ async def handle_admin_id(update: Update, context: ContextTypes.DEFAULT_TYPE):
     with open(BLOCKED_FILE, "r") as f:
         blocked = set(f.read().splitlines())
 
-    if user_id in blocked:                                                               blocked.remove(user_id)
+    if user_id in blocked:
+        blocked.remove(user_id)
         with open(BLOCKED_FILE, "w") as f:
             f.write("\n".join(blocked) + "\n")
         await update.message.reply_text(f"✅ Unblocked {user_id}")
