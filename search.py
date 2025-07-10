@@ -15,6 +15,7 @@ DATA_FILES = [
     "series_data.json",
     "latest_data.json",
     "eighteenplus_data.json",
+    "multipart_data.json",  
 ]
 
 # ✅ Convert poster URLs properly
