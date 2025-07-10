@@ -24,7 +24,7 @@ load_dotenv()
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 
 # Force Join Channels
-FORCE_JOIN_CHANNELS = ["@oxAngry", "@modflux_99"]
+FORCE_JOIN_CHANNELS = ["@cinepulsebot_official", "@modflux_99"]
 
 # Logging
 logging.basicConfig(format="%(asctime)s - %(levelname)s - %(message)s", level=logging.INFO)
@@ -60,20 +60,26 @@ async def check_force_join(update: Update, context: ContextTypes.DEFAULT_TYPE) -
             not_joined.append(ch)
 
     if not_joined:
-        text = (
-            "🔒 <b>Access Locked!</b>\n"
-            "📢 Please join the required channels first:\n\n" +
-            "\n".join([f"➤ {c}" for c in not_joined]) +
-            "\n\n✅ Then click “I've Joined” to unlock full features."
-        )
-        buttons = [[InlineKeyboardButton(c, url=f"https://t.me/{c.strip('@')}")] for c in not_joined]
-        buttons.append([InlineKeyboardButton("✅ I've Joined", callback_data="check_joined")])
+        text = """
+🔒 𝐀𝐜𝐜𝐞𝐬𝐬 𝐋𝐨𝐜𝐤𝐞𝐝!
+📢 𝐏𝐥𝐞𝐚𝐬𝐞 𝐣𝐨𝐢𝐧 𝐭𝐡𝐞 𝐫𝐞𝐪𝐮𝐢𝐫𝐞𝐝 𝐜𝐡𝐚𝐧𝐧𝐞𝐥𝐬 𝐟𝐢𝐫𝐬𝐭: 👇
+
+🔹 𝐂𝐢𝐧𝐞𝐏𝐮𝐥𝐬𝐞𝐁𝐨𝐭 𝐎𝐟𝐟𝐢𝐜𝐢𝐚𝐥 ✨🍿
+🔹 𝐌𝐨𝐝𝐅𝐥𝐮𝐱 ⚡💠
+
+✅ 𝐓𝐡𝐞𝐧 𝐜𝐥𝐢𝐜𝐤 “𝐈’𝐯𝐞 𝐉𝐨𝐢𝐧𝐞𝐝” 𝐭𝐨 𝐮𝐧𝐥𝐨𝐜𝐤 𝐟𝐮𝐥𝐥 𝐟𝐞𝐚𝐭𝐮𝐫𝐞𝐬.
+"""
+        buttons = [
+            [InlineKeyboardButton("📢✨ 𝐂𝐢𝐧𝐞𝐏𝐮𝐥𝐬𝐞𝐁𝐨𝐭 𝐎𝐟𝐟𝐢𝐜𝐢𝐚𝐥", url="https://t.me/cinepulsebot_official")],
+            [InlineKeyboardButton("⚡💠 𝐌𝐨𝐝𝐅𝐥𝐮𝐱", url="https://t.me/modflux_99")],
+            [InlineKeyboardButton("✅ I’ve Joined", callback_data="check_joined")]
+        ]
 
         try:
             if update.message:
-                await update.message.reply_text(text, reply_markup=InlineKeyboardMarkup(buttons), parse_mode="HTML")
+                await update.message.reply_text(text, reply_markup=InlineKeyboardMarkup(buttons))
             elif update.callback_query:
-                await update.callback_query.message.reply_text(text, reply_markup=InlineKeyboardMarkup(buttons), parse_mode="HTML")
+                await update.callback_query.message.reply_text(text, reply_markup=InlineKeyboardMarkup(buttons))
         except Exception as e:
             logging.error(f"Force join error: {e}")
             handle_bot_block(user_id)
@@ -125,16 +131,22 @@ async def joined_check_callback(update: Update, context: ContextTypes.DEFAULT_TY
             not_joined.append(ch)
 
     if not_joined:
-        text = (
-            "❌ <b>You're still not joined all required channels.</b>\n\n" +
-            "\n".join([f"➤ {c}" for c in not_joined]) +
-            "\n\n📌 Please join and click again."
-        )
-        buttons = [[InlineKeyboardButton(c, url=f"https://t.me/{c.strip('@')}")] for c in not_joined]
-        buttons.append([InlineKeyboardButton("✅ I've Joined", callback_data="check_joined")])
-        await query.edit_message_text(text, parse_mode="HTML", reply_markup=InlineKeyboardMarkup(buttons))
+        text = """
+❌ 𝐘𝐨𝐮'𝐫𝐞 𝐬𝐭𝐢𝐥𝐥 𝐧𝐨𝐭 𝐣𝐨𝐢𝐧𝐞𝐝 𝐚𝐥𝐥 𝐫𝐞𝐪𝐮𝐢𝐫𝐞𝐝 𝐜𝐡𝐚𝐧𝐧𝐞𝐥𝐬. 👇
+
+🔹 𝐂𝐢𝐧𝐞𝐏𝐮𝐥𝐬𝐞𝐁𝐨𝐭 𝐎𝐟𝐟𝐢𝐜𝐢𝐚𝐥 📢✨
+🔹 𝐌𝐨𝐝𝐅𝐥𝐮𝐱 ⚡💠
+
+📌 𝐏𝐥𝐞𝐚𝐬𝐞 𝐣𝐨𝐢𝐧 𝐚𝐧𝐝 𝐜𝐥𝐢𝐜𝐤 𝐚𝐠𝐚𝐢𝐧.
+"""
+        buttons = [
+            [InlineKeyboardButton("📢✨ 𝐂𝐢𝐧𝐞𝐏𝐮𝐥𝐬𝐞𝐁𝐨𝐭 𝐎𝐟𝐟𝐢𝐜𝐢𝐚𝐥", url="https://t.me/cinepulsebot_official")],
+            [InlineKeyboardButton("⚡💠 𝐌𝐨𝐝𝐅𝐥𝐮𝐱", url="https://t.me/modflux_99")],
+            [InlineKeyboardButton("✅ I’ve Joined", callback_data="check_joined")]
+        ]
+        await query.edit_message_text(text, reply_markup=InlineKeyboardMarkup(buttons))
     else:
-        await query.edit_message_text("✅ <b>Access Granted!</b>", parse_mode="HTML")
+        await query.edit_message_text("✅ Access Granted!")
         await start(update, context)
 
 # ✅ Handle All Messages
@@ -238,4 +250,3 @@ if __name__ == "__main__":
 
     print("✅ CinePulseBot is running...")
     app.run_polling()
-    
